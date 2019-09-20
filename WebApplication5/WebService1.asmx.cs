@@ -40,22 +40,20 @@ namespace WebApplication5
 
         public ReturnData GetConfig()
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  GetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
 
             ReturnData returnData = new ReturnData
             {
                 ReturnCode = ReturnCode.Successful,
                 ReturnValue = _parameterHandler.GetCurrentParameters()
             };
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  GetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
         }
 
         public ReturnData SetConfigToDefault()
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
 
             ReturnData returnData = new ReturnData
             {
@@ -69,18 +67,17 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   {1}: {2}", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName, ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
         }
 
         public ReturnData SetConfig(ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary[] configuration)
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  SetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
 
             ReturnData returnData = new ReturnData
             {
@@ -101,18 +98,17 @@ namespace WebApplication5
 
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   {1}: {2}", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName, ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  SetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
         }
 
         public ReturnData PrepareTransaction()
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  PrepareTransaction(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
 
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
 
@@ -136,19 +132,18 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   {1}: {2}", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName, ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  PrepareTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
 
         }
 
         public ReturnData StartTransaction(double amount, bool amountSpecified)
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  StartTransaction(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
 
             ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary txnResult = new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
             {
@@ -185,12 +180,12 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   {1}: {2}", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName, ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
 
             }
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  StartTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
 
         }
@@ -202,8 +197,7 @@ namespace WebApplication5
 
         public ReturnData StopCurrentTransaction()
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
             try
             {
@@ -212,18 +206,17 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   {1}: {2}", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName, ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
         }
 
         public ReturnData GetDebugLog()
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
 
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
 
@@ -290,29 +283,27 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   {1}: {2}", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName, ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
             returnData.ReturnValue = _debugLogHandler.GetDebugLog();
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
         }
 
         public ReturnData ClearLogs()
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  ClearLogs(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
             _debugLogHandler.ClearDebugLog();
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  ClearLogs(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
         }
 
         public ReturnData GetDeviceState()
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  GetDeviceState(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
 
             ReturnData returnData = new ReturnData
             {
@@ -337,18 +328,17 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   {1}: {2}", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName, ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  GetDeviceState(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
         }
 
         public ReturnData ResetDevice()
         {
-            string functionName = stackTrace.GetFrame(1).GetMethod().Name;
-            Trace.WriteLine(string.Format("{0}  {1}: Call", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  ResetDevice(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
 
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
 
@@ -358,11 +348,11 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   {1}: {2}", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName, ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  {1}: Return", DateTime.Now.ToString("yyyymmdd HH:mm:ss"), functionName));
+            Trace.WriteLine(string.Format("{0}  ResetDevice(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
             return returnData;
 
 
