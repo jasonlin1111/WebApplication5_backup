@@ -40,20 +40,20 @@ namespace WebApplication5
 
         public ReturnData GetConfig()
         {
-            Trace.WriteLine(string.Format("{0}  GetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  GetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
             ReturnData returnData = new ReturnData
             {
                 ReturnCode = ReturnCode.Successful,
                 ReturnValue = _parameterHandler.GetCurrentParameters()
             };
-            Trace.WriteLine(string.Format("{0}  GetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  GetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData SetConfigToDefault()
         {
-            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
             ReturnData returnData = new ReturnData
             {
@@ -67,17 +67,17 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData SetConfig(ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary[] configuration)
         {
-            Trace.WriteLine(string.Format("{0}  SetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  SetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
             ReturnData returnData = new ReturnData
             {
@@ -98,17 +98,18 @@ namespace WebApplication5
 
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  SetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  SetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData PrepareTransaction()
         {
-            Trace.WriteLine(string.Format("{0}  PrepareTransaction(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Thread thread = Thread.CurrentThread;
+            Trace.WriteLine(string.Format("{0}  PrepareTransaction(): Call {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), thread.ManagedThreadId));
 
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
 
@@ -132,18 +133,19 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  PrepareTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  PrepareTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
 
         }
 
         public ReturnData StartTransaction(double amount, bool amountSpecified)
         {
-            Trace.WriteLine(string.Format("{0}  StartTransaction(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Thread thread = Thread.CurrentThread;
+            Trace.WriteLine(string.Format("{0}  StartTransaction(): Call {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), thread.ManagedThreadId));
 
             ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary txnResult = new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
             {
@@ -157,9 +159,14 @@ namespace WebApplication5
             byte[] statusWord = null;
             try
             {
+                _serialPort.StartTransaction();
+
                 // Initial Transaction
                 string t61Message = BuildTxnDataStream(amount);
+                Thread.Sleep(100);
+                Trace.WriteLine(string.Format("{0}  StartTransaction(): Sending T61", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
                 _serialPort.WriteAndReadMessage(PktType.STX, "T61", t61Message, out string t61Response, true);
+                Trace.WriteLine(string.Format("{0}  StartTransaction(): T61 sent", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
                 _debugLogHandler.ClearDebugLog();
 
@@ -176,16 +183,18 @@ namespace WebApplication5
                         }
                         );
                 }
+                GetTxnData();
                 returnData.ReturnValue[0].Value = TransactionResultAnalyze(t61Response, statusWord);
             }
             catch (Exception ex)
-            {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
+            { 
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
+                txnResult.Value = new byte[] { 0xEF, 0x00 };
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
 
             }
-            Trace.WriteLine(string.Format("{0}  StartTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  StartTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
 
         }
@@ -197,29 +206,35 @@ namespace WebApplication5
 
         public ReturnData StopCurrentTransaction()
         {
-            Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            
+            Thread thread = Thread.CurrentThread;
+            Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Call {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), thread.ManagedThreadId));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
+            _serialPort.CancelTransaction();
+            /*
             try
             {
-                Thread.Sleep(500);
+                Thread.Sleep(100);
+                Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Sending T6C", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
                 _serialPort.WriteAndReadMessage(PktType.STX, "T6C", "", out string t6CResponse, false);
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            */
+            Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData GetDebugLog()
         {
-            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
-
+            /*
             try
             {
                 // Time Stamps
@@ -283,27 +298,28 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
+            */
             returnData.ReturnValue = _debugLogHandler.GetDebugLog();
-            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData ClearLogs()
         {
-            Trace.WriteLine(string.Format("{0}  ClearLogs(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  ClearLogs(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
             _debugLogHandler.ClearDebugLog();
-            Trace.WriteLine(string.Format("{0}  ClearLogs(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  ClearLogs(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData GetDeviceState()
         {
-            Trace.WriteLine(string.Format("{0}  GetDeviceState(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  GetDeviceState(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
             ReturnData returnData = new ReturnData
             {
@@ -328,17 +344,17 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  GetDeviceState(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  GetDeviceState(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData ResetDevice()
         {
-            Trace.WriteLine(string.Format("{0}  ResetDevice(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  ResetDevice(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
 
@@ -348,11 +364,11 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  ResetDevice(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss")));
+            Trace.WriteLine(string.Format("{0}  ResetDevice(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
 
 
@@ -463,6 +479,8 @@ namespace WebApplication5
             }
             else if (result.StartsWith("T6211"))
             {
+                _debugLogHandler.ClearDebugLog();
+
                 switch (result.Substring(5))
                 {
                     case "F1111111":
@@ -555,6 +573,75 @@ namespace WebApplication5
             }
 
             return true;
+        }
+
+        private void GetTxnData()
+        {
+            try
+            {
+                // Time Stamps
+                _debugLogHandler.Add(
+                    new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
+                    {
+                        Key = new byte[] { 0xC0, 0x1E },
+                        Value = DataManager.HexStringToByteArray(DateTime.Now.ToString("HHmmss"))
+                    }
+                    );
+
+                string[] logTags = new string[] { "9F27", "9F10", "9F66" };
+                _serialPort.WriteAndReadMessage(PktType.STX, "T63", string.Join(Convert.ToChar(0x1A).ToString(), logTags), out string t63Response, true, 2000);
+
+                Dictionary<string, string> dicTagValue = new Dictionary<string, string>();
+                string[] dataObj = t63Response.Split(Convert.ToChar(0x1A));
+                foreach (string data in dataObj)
+                {
+                    string[] tlv = data.Split(Convert.ToChar(0x1C));
+                    if (tlv.Length == 3)
+                    {
+                        dicTagValue.Add(tlv[0], tlv[2]);
+                    }
+                }
+
+                // CID 9F27
+                if (dicTagValue.TryGetValue("9F27", out string value9F27))
+                {
+                    _debugLogHandler.Add(
+                        new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
+                        {
+                            Key = new byte[] { 0x9F, 0x27 },
+                            Value = DataManager.HexStringToByteArray(value9F27)
+                        }
+                        );
+                }
+
+                // IAD 9F10
+                if (dicTagValue.TryGetValue("9F10", out string value9F10))
+                {
+                    _debugLogHandler.Add(
+                        new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
+                        {
+                            Key = new byte[] { 0x9F, 0x10 },
+                            Value = DataManager.HexStringToByteArray(value9F10)
+                        }
+                        );
+                }
+
+                // TTQ 9F66
+                if (dicTagValue.TryGetValue("9F66", out string value9F66))
+                {
+                    _debugLogHandler.Add(
+                        new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
+                        {
+                            Key = new byte[] { 0x9F, 0x66 },
+                            Value = DataManager.HexStringToByteArray(value9F66)
+                        }
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

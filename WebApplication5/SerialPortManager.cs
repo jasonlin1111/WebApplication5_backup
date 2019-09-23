@@ -21,6 +21,7 @@ namespace Bezel8PlusApp
         public static SerialPortManager Instance { get { return lazy.Value; } }
 
         private SerialPort _serialPort;
+        private static bool _stopTransaction = false;
 
         private SerialPortManager()
         {
@@ -158,36 +159,12 @@ namespace Bezel8PlusApp
 
         public void CancelTransaction()
         {
-            try
-            {
-                string packed_meaasge = Convert.ToChar(0x02).ToString() + "T6C" + Convert.ToChar(0x03).ToString();
-                byte lrc = DataManager.LRCCalculator(Encoding.ASCII.GetBytes(packed_meaasge), packed_meaasge.Length);
-                _serialPort.Write(packed_meaasge + Convert.ToChar(lrc).ToString());
+            _stopTransaction = true;
+        }
 
-                /*
-                byte[] controlCode = new byte[1];
-                _serialPort.Read(controlCode, 0, 1);
-
-                switch (controlCode[0])
-                {
-                    case 0x06:
-                    case 0x04:
-                        break;
-
-                    case 0x15:
-                        // NAK
-                        throw new System.Exception("Received NAK from reader: Incorrect LRC.");
-
-                    default:
-                        // Unknown
-                        throw new System.Exception("Unknown response: 0x" + controlCode[0].ToString("X2"));
-                }
-                */
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+        public void StartTransaction()
+        {
+            _stopTransaction = false;
         }
 
         public void WriteAndReadMessage(PktType type, string head, string body, out string responseOut, bool keepWaitting = true, int readTimeOut = 0)
@@ -273,6 +250,14 @@ namespace Bezel8PlusApp
                 s.Start();
             while (s.Elapsed <= TimeSpan.FromMilliseconds(readTimeOut))
             {
+                if (_stopTransaction)
+                {
+                    _stopTransaction = false;
+                    string t6CMeaasge = Convert.ToChar(0x02).ToString() + "T6C" + Convert.ToChar(0x03).ToString();
+                    byte t6cLrc = DataManager.LRCCalculator(Encoding.ASCII.GetBytes(t6CMeaasge), t6CMeaasge.Length);
+                    Thread.Sleep(500);
+                    _serialPort.Write(t6CMeaasge + Convert.ToChar(t6cLrc).ToString());
+                }
 
                 if (_serialPort.BytesToRead == 1)
                 {
