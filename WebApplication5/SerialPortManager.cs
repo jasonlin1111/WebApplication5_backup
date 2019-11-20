@@ -167,7 +167,7 @@ namespace Bezel8PlusApp
             _stopTransaction = false;
         }
 
-        public void WriteAndReadMessage(PktType type, string head, string body, out string responseOut, bool keepWaitting = true, int readTimeOut = 0)
+        public void WriteAndReadMessage_old(PktType type, string head, string body, out string responseOut, bool keepWaitting = true, int readTimeOut = 0)
         {
             string prefix = String.Empty;
             string suffix = String.Empty;
@@ -311,6 +311,165 @@ namespace Bezel8PlusApp
                 throw new System.TimeoutException("Timeout: No response");
             }
 
+        }
+
+        public void WriteAndReadMessage(PktType type, string head, string body, out string responseOut, bool keepWaitting = true, int readTimeOut = 0)
+        {
+            string prefix = String.Empty;
+            string suffix = String.Empty;
+            responseOut = String.Empty;
+
+            if (type == PktType.SI)
+            {
+                prefix = Convert.ToChar(0x0F).ToString();
+                suffix = Convert.ToChar(0x0E).ToString();
+            }
+            else if (type == PktType.STX)
+            {
+                prefix = Convert.ToChar(0x02).ToString();
+                suffix = Convert.ToChar(0x03).ToString();
+            }
+
+
+            string packed_meaasge = prefix + head + body + suffix;
+            byte lrc = DataManager.LRCCalculator(Encoding.ASCII.GetBytes(packed_meaasge), packed_meaasge.Length);
+
+
+            if (_serialPort.BytesToRead > 0)
+                _serialPort.DiscardInBuffer();
+
+            if (_serialPort.BytesToWrite > 0)
+                _serialPort.DiscardOutBuffer();
+
+
+            // Sending message
+            try
+            {
+                _serialPort.Write(packed_meaasge + Convert.ToChar(lrc).ToString());
+                if (OnDataSent != null)
+                {
+                    byte[] data_sent = Encoding.ASCII.GetBytes(packed_meaasge + Convert.ToChar(lrc).ToString());
+                    OnDataSent(this, data_sent);
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                throw new System.InvalidOperationException("Serial Port is not open.");
+            }
+            catch (Exception)
+            {
+                throw new System.Exception("Sending message failed.");
+            }
+
+
+            // Check if ACK is received
+            try
+            {
+                byte[] controlCode = new byte[1];
+                _serialPort.Read(controlCode, 0, 1);
+
+                if (OnDataReceived != null)
+                {
+                    OnDataReceived(this, controlCode);
+                }
+
+                switch (controlCode[0])
+                {
+                    case 0x06:
+                    case 0x04:
+                        break;
+
+                    case 0x15:
+                        // NAK
+                        throw new System.Exception("Received NAK from reader: Incorrect LRC.");
+
+                    default:
+                        // Unknown
+                        throw new System.Exception("Unknown response: 0x" + controlCode[0].ToString("X2"));
+                }
+            }
+            catch (TimeoutException)
+            {
+                // Reader no response;
+                throw new System.TimeoutException("Timeout: No ACK");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+                throw new System.Exception("Waitting ACK failed.");
+            }
+
+            if (!keepWaitting)
+                return;
+
+            int response_length = 0;
+            byte[] readBuffer = new byte[_serialPort.ReadBufferSize];
+            byte bPrefix, bSuffix;
+
+            if (type == PktType.SI)
+            {
+                bPrefix = 0x0F;
+                bSuffix = 0x0E;
+            }
+            else
+            {
+                bPrefix = 0x02;
+                bSuffix = 0x03;
+            }
+
+            // Waitting for reply from reader
+            Stopwatch s = new Stopwatch();
+            if (readTimeOut > 0)
+                s.Start();
+            while (s.Elapsed <= TimeSpan.FromMilliseconds(readTimeOut))
+            {
+
+                if (_serialPort.BytesToRead == 0)
+                    continue;
+
+                int bytes = _serialPort.BytesToRead;
+                _serialPort.Read(readBuffer, response_length, bytes);
+                response_length += bytes;
+
+                if (readBuffer[0] == bPrefix && readBuffer[response_length - 2] == bSuffix)
+                {
+                    if (OnDataReceived != null)
+                    {
+                        byte[] localBuffer = new byte[response_length];
+                        Array.Copy(readBuffer, localBuffer, response_length);
+                        OnDataReceived(this, localBuffer);
+                    }
+
+                    // LRC check
+                    if (readBuffer[response_length - 1] == DataManager.LRCCalculator(readBuffer, response_length - 1))
+                    {
+                        // Send ACK
+                        _serialPort.Write(Convert.ToChar(0x06).ToString());
+                        if (OnDataSent != null)
+                        {
+                            byte[] ack = Encoding.ASCII.GetBytes(Convert.ToChar(0x06).ToString());
+                            OnDataSent(this, ack);
+                        }
+                        responseOut = Encoding.ASCII.GetString(readBuffer, 1, response_length - 3);
+                    }
+                    else
+                    {
+                        // Send NAK
+                        _serialPort.Write(Convert.ToChar(0x15).ToString());
+                        if (OnDataSent != null)
+                        {
+                            byte[] nak = Encoding.ASCII.GetBytes(Convert.ToChar(0x15).ToString());
+                            OnDataSent(this, nak);
+                        }
+                    }
+                    return;
+                }
+
+            }
+            s.Reset();
+
+            // Timeout
+            throw new System.TimeoutException("Timeout: No response");
         }
     }
 }
