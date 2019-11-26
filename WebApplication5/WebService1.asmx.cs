@@ -26,6 +26,7 @@ namespace WebApplication5
         private ParameterHandler _parameterHandler;
         private DebugLogHandler _debugLogHandler;
         private string _portName;
+        private int _buadrate;
         StackTrace stackTrace;
 
         public WebService1()
@@ -33,28 +34,31 @@ namespace WebApplication5
             _parameterHandler = new ParameterHandler();
             _debugLogHandler = new DebugLogHandler();
             _serialPort = SerialPortManager.Instance;
+            _buadrate = Int32.Parse(ConfigurationManager.AppSettings["buadrate"]);
             _portName = ConfigurationManager.AppSettings["portName"];
-            _serialPort.Open(_portName);
+            if (!_serialPort.IsOpen)
+            {
+                _serialPort.Open(_portName);
+            }
             stackTrace = new StackTrace();
         }
 
         public ReturnData GetConfig()
         {
-            Trace.WriteLine(string.Format("{0}  GetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            //Trace.WriteLine(string.Format("{0}  GetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
             ReturnData returnData = new ReturnData
             {
                 ReturnCode = ReturnCode.Successful,
                 ReturnValue = _parameterHandler.GetCurrentParameters()
             };
-            Trace.WriteLine(string.Format("{0}  GetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            //Trace.WriteLine(string.Format("{0}  GetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData SetConfigToDefault()
         {
-            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
-
+            //Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData
             {
                 ReturnCode = ReturnCode.Successful
@@ -71,14 +75,13 @@ namespace WebApplication5
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            //Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData SetConfig(ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary[] configuration)
         {
-            Trace.WriteLine(string.Format("{0}  SetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
-
+            //Trace.WriteLine(string.Format("{0}  SetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData
             {
                 ReturnCode = ReturnCode.Successful
@@ -102,7 +105,7 @@ namespace WebApplication5
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            Trace.WriteLine(string.Format("{0}  SetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            //Trace.WriteLine(string.Format("{0}  SetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
@@ -122,7 +125,12 @@ namespace WebApplication5
                 }
 
                 if (!IsReaderOnIdle())
+                {
+                    Trace.WriteLine("0");
                     _serialPort.WriteAndReadMessage(PktType.STX, "T6C", "", out string t6Cresponse, false);
+                    Trace.WriteLine("1");
+                }
+                    
 
                 // Setting Timeout for Transaction
                 int timeout = _parameterHandler.GetTimeoutPeriod();
@@ -156,14 +164,15 @@ namespace WebApplication5
                 ReturnCode = ReturnCode.Successful,
                 ReturnValue = new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary[] { txnResult }
             };
+
             byte[] statusWord = null;
             try
             {
-                _serialPort.StartTransaction();
+                //_serialPort.StartTransaction();
 
                 // Initial Transaction
                 string t61Message = BuildTxnDataStream(amount);
-                Thread.Sleep(100);
+                //Thread.Sleep(100);
                 Trace.WriteLine(string.Format("{0}  StartTransaction(): Sending T61", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
                 _serialPort.WriteAndReadMessage(PktType.STX, "T61", t61Message, out string t61Response, true);
                 Trace.WriteLine(string.Format("{0}  StartTransaction(): T61 sent", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
@@ -171,10 +180,12 @@ namespace WebApplication5
                 _debugLogHandler.ClearDebugLog();
 
                 _serialPort.WriteAndReadMessage(PktType.STX, "V03", "", out string v03Response, true);
+                
                 if (v03Response.ToUpper().StartsWith("V040"))
                 {
                     string command = v03Response.Substring(v03Response.LastIndexOf(Convert.ToChar(0x1A)) + 1, 4);
                     statusWord = DataManager.HexStringToByteArray(v03Response.Substring(v03Response.Length - 4));
+
                     _debugLogHandler.Add(
                         new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
                         {
@@ -192,7 +203,6 @@ namespace WebApplication5
                 txnResult.Value = new byte[] { 0xEF, 0x00 };
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
-
             }
             Trace.WriteLine(string.Format("{0}  StartTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
@@ -210,11 +220,11 @@ namespace WebApplication5
             Thread thread = Thread.CurrentThread;
             Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Call {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), thread.ManagedThreadId));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
-            _serialPort.CancelTransaction();
-            /*
+            //_serialPort.CancelTransaction();
+
             try
             {
-                Thread.Sleep(100);
+                Thread.Sleep(200);
                 Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Sending T6C", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
                 _serialPort.WriteAndReadMessage(PktType.STX, "T6C", "", out string t6CResponse, false);
             }
@@ -224,96 +234,25 @@ namespace WebApplication5
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            */
+
             Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData GetDebugLog()
         {
-            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
-
+            //Trace.WriteLine(string.Format("{0}  GetDebugLog(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
-            /*
-            try
-            {
-                // Time Stamps
-                _debugLogHandler.Add(
-                    new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
-                    {
-                        Key = new byte[] { 0xC0, 0x1E },
-                        Value = DataManager.HexStringToByteArray(DateTime.Now.ToString("HHmmss"))
-                    }
-                    );
-
-                string[] logTags = new string[] { "9F27", "9F10", "9F66" };
-                _serialPort.WriteAndReadMessage(PktType.STX, "T63", string.Join(Convert.ToChar(0x1A).ToString(), logTags), out string t63Response, true, 2000);
-
-                Dictionary<string, string> dicTagValue = new Dictionary<string, string>();
-                string[] dataObj = t63Response.Split(Convert.ToChar(0x1A));
-                foreach (string data in dataObj)
-                {
-                    string[] tlv = data.Split(Convert.ToChar(0x1C));
-                    if (tlv.Length == 3)
-                    {
-                        dicTagValue.Add(tlv[0], tlv[2]);
-                    }
-                }
-
-                // CID 9F27
-                if (dicTagValue.TryGetValue("9F27", out string value9F27))
-                {
-                    _debugLogHandler.Add(
-                        new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
-                        {
-                            Key = new byte[] { 0x9F, 0x27 },
-                            Value = DataManager.HexStringToByteArray(value9F27)
-                        }
-                        );
-                }
-
-                // IAD 9F10
-                if (dicTagValue.TryGetValue("9F10", out string value9F10))
-                {
-                    _debugLogHandler.Add(
-                        new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
-                        {
-                            Key = new byte[] { 0x9F, 0x10 },
-                            Value = DataManager.HexStringToByteArray(value9F10)
-                        }
-                        );
-                }
-
-                // TTQ 9F66
-                if (dicTagValue.TryGetValue("9F66", out string value9F66))
-                {
-                    _debugLogHandler.Add(
-                        new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
-                        {
-                            Key = new byte[] { 0x9F, 0x66 },
-                            Value = DataManager.HexStringToByteArray(value9F66)
-                        }
-                        );
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
-                returnData.ReturnCode = ReturnCode.Error;
-                returnData.ReturnCodeSpecified = true;
-            }
-            */
             returnData.ReturnValue = _debugLogHandler.GetDebugLog();
-            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData ClearLogs()
         {
-            Trace.WriteLine(string.Format("{0}  ClearLogs(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            //Trace.WriteLine(string.Format("{0}  ClearLogs(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
             _debugLogHandler.ClearDebugLog();
-            Trace.WriteLine(string.Format("{0}  ClearLogs(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            //Trace.WriteLine(string.Format("{0}  ClearLogs(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
@@ -479,20 +418,21 @@ namespace WebApplication5
             }
             else if (result.StartsWith("T6211"))
             {
-                _debugLogHandler.ClearDebugLog();
-
                 switch (result.Substring(5))
                 {
                     case "F1111111":
                         // Cancelled
+                        _debugLogHandler.ClearDebugLog();
                         return new byte[] { 0xEF, 0x00 };
 
                     case "80000103":
                         // Collision
+                        _debugLogHandler.ClearDebugLog();
                         return new byte[] { 0xEF, 0x04 };
 
                     case "F1111114":
                         // Timeout
+                        _debugLogHandler.ClearDebugLog();
                         return new byte[] { 0xEF, 0x03 };
 
                     default:

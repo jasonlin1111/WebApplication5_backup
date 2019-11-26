@@ -68,7 +68,7 @@ namespace Bezel8PlusApp
         /// </summary>
         public void Open(
             string portname = "COM1",
-            int baudrate = 9600,
+            int baudrate = 115200,
             Parity parity = Parity.None,
             int databits = 8,
             StopBits stopbits = StopBits.One,
@@ -76,7 +76,7 @@ namespace Bezel8PlusApp
         {
             if (_serialPort.IsOpen)
             {
-                Close();
+                return;
             }
             try
             {
@@ -167,7 +167,7 @@ namespace Bezel8PlusApp
             _stopTransaction = false;
         }
 
-        public void WriteAndReadMessage_old(PktType type, string head, string body, out string responseOut, bool keepWaitting = true, int readTimeOut = 0)
+        public void WriteAndReadMessage_1(PktType type, string head, string body, out string responseOut, bool keepWaitting = true, int readTimeOut = 0)
         {
             string prefix = String.Empty;
             string suffix = String.Empty;
@@ -339,7 +339,7 @@ namespace Bezel8PlusApp
                 _serialPort.DiscardInBuffer();
 
             if (_serialPort.BytesToWrite > 0)
-                _serialPort.DiscardOutBuffer();
+               _serialPort.DiscardOutBuffer();
 
 
             // Sending message
