@@ -141,7 +141,7 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1} - {2}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message, _serialPort.GetErrorCode()));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
@@ -174,7 +174,7 @@ namespace WebApplication5
                 string t61Message = BuildTxnDataStream(amount);
                 //Thread.Sleep(100);
                 Trace.WriteLine(string.Format("{0}  StartTransaction(): Sending T61", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
-                _serialPort.WriteAndReadMessage(PktType.STX, "T61", t61Message, out string t61Response, true);
+                _serialPort.WriteAndReadMessage(PktType.STX, "T61", t61Message, out string t61Response, true, 30000);
                 Trace.WriteLine(string.Format("{0}  StartTransaction(): T61 sent", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
                 _debugLogHandler.ClearDebugLog();
@@ -199,7 +199,7 @@ namespace WebApplication5
             }
             catch (Exception ex)
             { 
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1} - {2}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message, _serialPort.GetErrorCode()));
                 txnResult.Value = new byte[] { 0xEF, 0x00 };
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
@@ -230,7 +230,7 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
+                Trace.WriteLine(string.Format("{0}   Exception: {1} - {2}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message, _serialPort.GetErrorCode()));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }

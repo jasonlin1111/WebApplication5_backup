@@ -22,10 +22,16 @@ namespace Bezel8PlusApp
 
         private SerialPort _serialPort;
         private static bool _stopTransaction = false;
+        private string _errorCode = "0";
 
         private SerialPortManager()
         {
             _serialPort = new SerialPort();
+        }
+
+        public string GetErrorCode()
+        {
+            return _errorCode;
         }
 
         /// <summary>
@@ -319,6 +325,8 @@ namespace Bezel8PlusApp
             string suffix = String.Empty;
             responseOut = String.Empty;
 
+            _errorCode = "0";
+
             if (type == PktType.SI)
             {
                 prefix = Convert.ToChar(0x0F).ToString();
@@ -345,7 +353,9 @@ namespace Bezel8PlusApp
             // Sending message
             try
             {
+                _errorCode = "1";
                 _serialPort.Write(packed_meaasge + Convert.ToChar(lrc).ToString());
+                _errorCode = "2";
                 if (OnDataSent != null)
                 {
                     byte[] data_sent = Encoding.ASCII.GetBytes(packed_meaasge + Convert.ToChar(lrc).ToString());
@@ -366,7 +376,9 @@ namespace Bezel8PlusApp
             try
             {
                 byte[] controlCode = new byte[1];
+                _errorCode = "3";
                 _serialPort.Read(controlCode, 0, 1);
+                _errorCode = "4";
 
                 if (OnDataReceived != null)
                 {
@@ -377,14 +389,17 @@ namespace Bezel8PlusApp
                 {
                     case 0x06:
                     case 0x04:
+                        _errorCode = "5";
                         break;
 
                     case 0x15:
                         // NAK
+                        _errorCode = "6";
                         throw new System.Exception("Received NAK from reader: Incorrect LRC.");
 
                     default:
                         // Unknown
+                        _errorCode = "7";
                         throw new System.Exception("Unknown response: 0x" + controlCode[0].ToString("X2"));
                 }
             }
@@ -423,15 +438,17 @@ namespace Bezel8PlusApp
                 s.Start();
             while (s.Elapsed <= TimeSpan.FromMilliseconds(readTimeOut))
             {
-
+                _errorCode = "A";
                 if (_serialPort.BytesToRead == 0)
                     continue;
-
+                _errorCode = "B";
                 int bytes = _serialPort.BytesToRead;
+                _errorCode = "C";
                 _serialPort.Read(readBuffer, response_length, bytes);
+                _errorCode = "D";
                 response_length += bytes;
 
-                if (readBuffer[0] == bPrefix && readBuffer[response_length - 2] == bSuffix)
+                if (response_length > 2 && readBuffer[0] == bPrefix && readBuffer[response_length - 2] == bSuffix)
                 {
                     if (OnDataReceived != null)
                     {
@@ -443,8 +460,10 @@ namespace Bezel8PlusApp
                     // LRC check
                     if (readBuffer[response_length - 1] == DataManager.LRCCalculator(readBuffer, response_length - 1))
                     {
+                        _errorCode = "E";
                         // Send ACK
                         _serialPort.Write(Convert.ToChar(0x06).ToString());
+                        _errorCode = "F";
                         if (OnDataSent != null)
                         {
                             byte[] ack = Encoding.ASCII.GetBytes(Convert.ToChar(0x06).ToString());
@@ -455,7 +474,9 @@ namespace Bezel8PlusApp
                     else
                     {
                         // Send NAK
+                        _errorCode = "G";
                         _serialPort.Write(Convert.ToChar(0x15).ToString());
+                        _errorCode = "H";
                         if (OnDataSent != null)
                         {
                             byte[] nak = Encoding.ASCII.GetBytes(Convert.ToChar(0x15).ToString());
@@ -466,7 +487,9 @@ namespace Bezel8PlusApp
                 }
 
             }
+            _errorCode = "I";
             s.Reset();
+            _errorCode = "J";
 
             // Timeout
             throw new System.TimeoutException("Timeout: No response");
