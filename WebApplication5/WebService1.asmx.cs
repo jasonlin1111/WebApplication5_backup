@@ -45,20 +45,19 @@ namespace WebApplication5
 
         public ReturnData GetConfig()
         {
-            //Trace.WriteLine(string.Format("{0}  GetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
-
+            Trace.WriteLine(string.Format("{0}  GetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData
             {
                 ReturnCode = ReturnCode.Successful,
                 ReturnValue = _parameterHandler.GetCurrentParameters()
             };
-            //Trace.WriteLine(string.Format("{0}  GetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            Trace.WriteLine(string.Format("{0}  GetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData SetConfigToDefault()
         {
-            //Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData
             {
                 ReturnCode = ReturnCode.Successful
@@ -75,13 +74,13 @@ namespace WebApplication5
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            //Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            Trace.WriteLine(string.Format("{0}  SetConfigToDefault(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData SetConfig(ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary[] configuration)
         {
-            //Trace.WriteLine(string.Format("{0}  SetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            Trace.WriteLine(string.Format("{0}  SetConfig(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData
             {
                 ReturnCode = ReturnCode.Successful
@@ -105,15 +104,13 @@ namespace WebApplication5
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
-            //Trace.WriteLine(string.Format("{0}  SetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            Trace.WriteLine(string.Format("{0}  SetConfig(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData PrepareTransaction()
         {
-            Thread thread = Thread.CurrentThread;
-            Trace.WriteLine(string.Format("{0}  PrepareTransaction(): Call {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), thread.ManagedThreadId));
-
+            Trace.WriteLine(string.Format("{0}  PrepareTransaction(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
 
             try
@@ -131,7 +128,6 @@ namespace WebApplication5
                     Trace.WriteLine("1");
                 }
                     
-
                 // Setting Timeout for Transaction
                 int timeout = _parameterHandler.GetTimeoutPeriod();
                 _serialPort.WriteAndReadMessage(PktType.STX, "V09", Convert.ToChar(0x1A).ToString() + timeout.ToString(), out string v09response);
@@ -141,7 +137,7 @@ namespace WebApplication5
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1} - {2}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message, _serialPort.GetErrorCode()));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
@@ -152,8 +148,7 @@ namespace WebApplication5
 
         public ReturnData StartTransaction(double amount, bool amountSpecified)
         {
-            Thread thread = Thread.CurrentThread;
-            Trace.WriteLine(string.Format("{0}  StartTransaction(): Call {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), thread.ManagedThreadId));
+            Trace.WriteLine(string.Format("{0}  StartTransaction(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
 
             ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary txnResult = new ArrayOfKeyValueOfbase64Binarybase64BinaryKeyValueOfbase64Binarybase64Binary
             {
@@ -168,8 +163,6 @@ namespace WebApplication5
             byte[] statusWord = null;
             try
             {
-                //_serialPort.StartTransaction();
-
                 // Initial Transaction
                 string t61Message = BuildTxnDataStream(amount);
                 //Thread.Sleep(100);
@@ -199,7 +192,7 @@ namespace WebApplication5
             }
             catch (Exception ex)
             { 
-                Trace.WriteLine(string.Format("{0}   Exception: {1} - {2}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message, _serialPort.GetErrorCode()));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 txnResult.Value = new byte[] { 0xEF, 0x00 };
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
@@ -216,21 +209,20 @@ namespace WebApplication5
 
         public ReturnData StopCurrentTransaction()
         {
-            
             Thread thread = Thread.CurrentThread;
-            Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Call {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), thread.ManagedThreadId));
+            Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
             //_serialPort.CancelTransaction();
 
             try
             {
-                Thread.Sleep(200);
+                Thread.Sleep(100);
                 Trace.WriteLine(string.Format("{0}  StopCurrentTransaction(): Sending T6C", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
                 _serialPort.WriteAndReadMessage(PktType.STX, "T6C", "", out string t6CResponse, false);
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(string.Format("{0}   Exception: {1} - {2}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message, _serialPort.GetErrorCode()));
+                Trace.WriteLine(string.Format("{0}   Exception: {1}", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"), ex.Message));
                 returnData.ReturnCode = ReturnCode.Error;
                 returnData.ReturnCodeSpecified = true;
             }
@@ -241,25 +233,25 @@ namespace WebApplication5
 
         public ReturnData GetDebugLog()
         {
-            //Trace.WriteLine(string.Format("{0}  GetDebugLog(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
             returnData.ReturnValue = _debugLogHandler.GetDebugLog();
+            Trace.WriteLine(string.Format("{0}  GetDebugLog(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData ClearLogs()
         {
-            //Trace.WriteLine(string.Format("{0}  ClearLogs(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            Trace.WriteLine(string.Format("{0}  ClearLogs(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
             _debugLogHandler.ClearDebugLog();
-            //Trace.WriteLine(string.Format("{0}  ClearLogs(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
+            Trace.WriteLine(string.Format("{0}  ClearLogs(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
         }
 
         public ReturnData GetDeviceState()
         {
             Trace.WriteLine(string.Format("{0}  GetDeviceState(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
-
             ReturnData returnData = new ReturnData
             {
                 ReturnCode = ReturnCode.Successful
@@ -294,7 +286,6 @@ namespace WebApplication5
         public ReturnData ResetDevice()
         {
             Trace.WriteLine(string.Format("{0}  ResetDevice(): Call", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
-
             ReturnData returnData = new ReturnData { ReturnCode = ReturnCode.Successful };
 
             try
@@ -309,8 +300,6 @@ namespace WebApplication5
             }
             Trace.WriteLine(string.Format("{0}  ResetDevice(): Return", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff")));
             return returnData;
-
-
         }
 
 
@@ -374,11 +363,6 @@ namespace WebApplication5
 
         private byte[] TransactionResultAnalyze(string result, byte[] statusWord)
         {
-
-            // Fail
-            //if (string.IsNullOrEmpty(result))
-            //    return;
-
             if (result.StartsWith("T620"))
             {
                 // Success
